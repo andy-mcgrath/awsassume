@@ -44,7 +44,10 @@ func (c *AssumeCommand) Run(args []string) int {
 		return 1
 	}
 
-	credentials, err := assumeRole(ctx, account, role, region)
+	roleArn := fmt.Sprintf("arn:aws:iam::%s:role/%s", account, role)
+	c.Ui.Info(fmt.Sprintf("Assuming role: %s", roleArn))
+
+	credentials, err := assumeRole(ctx, roleArn, region)
 	if err != nil {
 		errStr := fmt.Sprintf("Error assuming role: %v\n", err.Error())
 		c.Ui.Error(errStr)
@@ -90,7 +93,7 @@ func (c *AssumeCommand) Synopsis() string {
 	return "Assume an AWS role and set or output temporary credentials"
 }
 
-func assumeRole(ctx context.Context, account, role, region string) (*types.Credentials, error) {
+func assumeRole(ctx context.Context, roleArn string, region string) (*types.Credentials, error) {
 	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(region))
 	if err != nil {
 		return nil, fmt.Errorf("loading config: %w", err)
@@ -99,8 +102,8 @@ func assumeRole(ctx context.Context, account, role, region string) (*types.Crede
 	client := sts.NewFromConfig(cfg)
 
 	assumedRole, err := client.AssumeRole(ctx, &sts.AssumeRoleInput{
-		RoleArn:         aws.String(fmt.Sprintf("arn:aws:iam::%s:role/%s", account, role)),
-		RoleSessionName: aws.String(role),
+		RoleArn:         aws.String(roleArn),
+		RoleSessionName: aws.String("awsassume"),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("assuming role: %w", err)

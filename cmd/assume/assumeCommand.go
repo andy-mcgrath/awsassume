@@ -1,4 +1,4 @@
-package main
+package assume
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/knadh/koanf/v2"
 	"os"
 	"strings"
 	"time"
@@ -16,12 +17,13 @@ import (
 	"github.com/mitchellh/cli"
 )
 
-type AssumeCommand struct {
+type Command struct {
 	Ui     cli.Ui
 	Action string
+	Config *koanf.Koanf
 }
 
-func (c *AssumeCommand) Run(args []string) int {
+func (c *Command) Run(args []string) int {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
 	defer cancel()
 
@@ -73,7 +75,7 @@ func (c *AssumeCommand) Run(args []string) int {
 	return 0
 }
 
-func (c *AssumeCommand) Help() string {
+func (c *Command) Help() string {
 	return `Usage: awsassume assume [options]
 
   Assume an AWS role and either set environment variables or output them as export commands.
@@ -89,7 +91,7 @@ Options:
         Will output a set of export commands if set, if not assumed role will be applied via environment variables`
 }
 
-func (c *AssumeCommand) Synopsis() string {
+func (c *Command) Synopsis() string {
 	return "Assume an AWS role and set or output temporary credentials"
 }
 

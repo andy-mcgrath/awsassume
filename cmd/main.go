@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/andy-mcgrath/awsassume/cmd/assume"
+	"github.com/andy-mcgrath/awsassume/config"
 	"github.com/mitchellh/cli"
 	"log"
 	"os"
@@ -9,11 +11,16 @@ import (
 const version = "v0.0.1"
 
 func main() {
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatalf("Error loading config: %s", err)
+	}
+
 	c := cli.NewCLI("awsassume", version)
 	c.Args = os.Args[1:]
 	c.Commands = map[string]cli.CommandFactory{
 		"assume": func() (cli.Command, error) {
-			return &AssumeCommand{
+			return &assume.Command{
 				Ui: &cli.ColoredUi{
 					Ui: &cli.BasicUi{
 						Writer:      os.Stdout,
@@ -23,6 +30,7 @@ func main() {
 					InfoColor:   cli.UiColorYellow,
 					ErrorColor:  cli.UiColorRed,
 				},
+				Config: cfg,
 			}, nil
 		},
 	}
